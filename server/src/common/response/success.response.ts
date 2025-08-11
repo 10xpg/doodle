@@ -1,12 +1,19 @@
-export class ApiSuccessResponse<T> {
+export class ApiSuccessBaseResponse {
   message: string;
   statusCode: number;
+
+  constructor(message: string, statusCode: number) {
+    this.message = message;
+    this.statusCode = statusCode;
+  }
+}
+
+export class ApiSuccessResponse<T> extends ApiSuccessBaseResponse {
   data?: T;
 
   constructor(message: string, statusCode: number, data?: T) {
-    this.message = message;
+    super(message, statusCode);
     this.data = data;
-    this.statusCode = statusCode;
   }
 }
 

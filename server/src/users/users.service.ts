@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto';
 import { HashProvider } from 'src/auth/providers/hash.provider';
@@ -35,7 +35,9 @@ export class UsersService {
 
   async getCustomer(customer: TokenDto) {
     try {
-      return await this.usersRepository.findCustomer(customer);
+      const user = await this.usersRepository.findCustomer(customer);
+      if (!user) throw new NotFoundException('User not found');
+      return user;
     } catch (e) {
       console.log(e);
       throw e;
@@ -44,7 +46,9 @@ export class UsersService {
 
   async getAdmin(admin: TokenDto) {
     try {
-      return await this.usersRepository.findAdmin(admin);
+      const user = await this.usersRepository.findAdmin(admin);
+      if (!user) throw new NotFoundException('User not found');
+      return user;
     } catch (e) {
       console.log(e);
       throw e;
@@ -53,7 +57,9 @@ export class UsersService {
 
   async getCustomerById(id: string) {
     try {
-      return await this.usersRepository.findCustomerById(id);
+      const user = await this.usersRepository.findCustomerById(id);
+      if (!user) throw new NotFoundException('User not found');
+      return user;
     } catch (e) {
       console.log(e);
       throw e;
@@ -62,7 +68,49 @@ export class UsersService {
 
   async getAdminById(id: string) {
     try {
-      return await this.usersRepository.findAdminById(id);
+      const user = await this.usersRepository.findAdminById(id);
+      if (!user) throw new NotFoundException('User not found');
+      return user;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async getAllAdmins() {
+    try {
+      const users = await this.usersRepository.findAllAdmins();
+      if (users?.length < 1) throw new NotFoundException('Users not found');
+      return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async getAllCustomers() {
+    try {
+      const users = await this.usersRepository.findAllCustomers();
+      if (users?.length < 1) throw new NotFoundException('Users not found');
+      return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async removeAdmin(id: string) {
+    try {
+      return await this.usersRepository.deleteAdmin(id);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async removeCustomer(id: string) {
+    try {
+      return await this.usersRepository.deleteCustomer(id);
     } catch (e) {
       console.log(e);
       throw e;

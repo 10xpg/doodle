@@ -95,6 +95,12 @@ export class UsersRepository {
     try {
       const user = await this.prisma.customer.findUnique({
         where: { id },
+        omit: {
+          password: true,
+          createdAt: true,
+          updatedAt: true,
+          gender: true,
+        },
       });
       return user;
     } catch (e) {
@@ -107,8 +113,72 @@ export class UsersRepository {
     try {
       const user = await this.prisma.admin.findUnique({
         where: { id },
+        omit: {
+          password: true,
+          createdAt: true,
+          updatedAt: true,
+          gender: true,
+        },
       });
       return user;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async findAllAdmins() {
+    try {
+      const users = await this.prisma.admin.findMany({
+        omit: {
+          password: true,
+          createdAt: true,
+          updatedAt: true,
+          role: true,
+          gender: true,
+        },
+      });
+      return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async findAllCustomers() {
+    try {
+      const users = await this.prisma.customer.findMany({
+        omit: {
+          password: true,
+          createdAt: true,
+          updatedAt: true,
+          role: true,
+          gender: true,
+        },
+      });
+      return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async deleteAdmin(id: string) {
+    try {
+      return await this.prisma.admin.delete({
+        where: { id },
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async deleteCustomer(id: string) {
+    try {
+      return await this.prisma.customer.delete({
+        where: { id },
+      });
     } catch (e) {
       console.log(e);
       throw e;
