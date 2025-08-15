@@ -1,10 +1,18 @@
-import { Controller, Delete, Get, HttpStatus, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Put,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   ApiSuccessBaseResponse,
   ApiSuccessResponse,
 } from 'src/common/response';
-import { GetUserBaseDto, DeleteUserDto } from './dto';
+import { GetUserBaseDto, DeleteUserDto, UpdatePasswordDto } from './dto';
 
 @Controller('users')
 export class UsersController {
@@ -34,6 +42,17 @@ export class UsersController {
     const { id } = param;
     const user = await this.usersService.getCustomerById(id);
     return new ApiSuccessResponse('Retrieved customer', HttpStatus.OK, user);
+  }
+
+  @Put(':id/password')
+  async changePassword(
+    @Body()
+    body: UpdatePasswordDto,
+    @Param()
+    params: GetUserBaseDto,
+  ) {
+    await this.usersService.changePassword(body);
+    return new ApiSuccessBaseResponse('Operation successful', HttpStatus.OK);
   }
 
   @Delete('admins/:id')

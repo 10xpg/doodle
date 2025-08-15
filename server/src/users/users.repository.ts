@@ -1,7 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto';
-import { TokenDto } from 'src/auth/dto';
 
 @Injectable()
 export class UsersRepository {
@@ -65,9 +64,8 @@ export class UsersRepository {
     }
   }
 
-  async findCustomer(customer: TokenDto) {
+  async findCustomer(email: string) {
     try {
-      const { email } = customer;
       const user = await this.prisma.customer.findUnique({
         where: { email },
       });
@@ -78,9 +76,8 @@ export class UsersRepository {
     }
   }
 
-  async findAdmin(admin: TokenDto) {
+  async findAdmin(email: string) {
     try {
-      const { email } = admin;
       const user = await this.prisma.admin.findUnique({
         where: { email },
       });
@@ -157,6 +154,27 @@ export class UsersRepository {
         },
       });
       return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async updatePassword(email: string, hash: string, role: string) {
+    try {
+      if (role === 'ADMIN') {
+        await this.prisma.admin.update({
+          where: { email },
+          data: { password: hash },
+        });
+      }
+
+      if (role === 'CUSTOMER') {
+        await this.prisma.customer.update({
+          where: { email },
+          data: { password: hash },
+        });
+      }
     } catch (e) {
       console.log(e);
       throw e;

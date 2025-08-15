@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
-import { CreateUserDto } from './dto';
+import { CreateUserDto, UpdatePasswordDto } from './dto';
 import { HashProvider } from 'src/auth/providers/hash.provider';
 import { TokenDto } from 'src/auth/dto';
 
@@ -35,7 +40,7 @@ export class UsersService {
 
   async getCustomer(customer: TokenDto) {
     try {
-      const user = await this.usersRepository.findCustomer(customer);
+      const user = await this.usersRepository.findCustomer(customer.email);
       if (!user) throw new NotFoundException('User not found');
       return user;
     } catch (e) {
@@ -46,7 +51,7 @@ export class UsersService {
 
   async getAdmin(admin: TokenDto) {
     try {
-      const user = await this.usersRepository.findAdmin(admin);
+      const user = await this.usersRepository.findAdmin(admin.email);
       if (!user) throw new NotFoundException('User not found');
       return user;
     } catch (e) {
@@ -111,6 +116,29 @@ export class UsersService {
   async removeCustomer(id: string) {
     try {
       return await this.usersRepository.deleteCustomer(id);
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async changePassword(payload: UpdatePasswordDto) {
+    try {
+      const { oldPassword, newPassword, email } = payload;
+      let user = await this.usersRepository.findAdmin(email);
+      if (!user) user = await this.usersRepository.findCustomer(email);
+      if (!user) throw new NotFoundException('Account not found');
+      if (oldPassword === newPassword)
+        throw new BadRequestException('Please use a new password');
+
+      const validPwd = await this.hashProvider.compare(
+        oldPassword,
+        user?.password,
+      );
+
+      if (!validPwd) throw new UnauthorizedException('Wrong password provided');
+      const newHash = await this.hashProvider.hash(newPassword);
+      await this.usersRepository.updatePassword(email, newHash, user?.role);
     } catch (e) {
       console.log(e);
       throw e;
