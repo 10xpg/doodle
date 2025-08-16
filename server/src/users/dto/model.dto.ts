@@ -10,7 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { BaseDto } from 'src/common/dto';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 
 enum Gender {
   MALE = 'M',
@@ -61,3 +61,10 @@ export class UserDto extends BaseDto {
   @IsMobilePhone()
   phone: string;
 }
+
+export class UserResponse extends OmitType(UserDto, [
+  'password',
+  'createdAt',
+  'updatedAt',
+  'gender',
+] as const) {}

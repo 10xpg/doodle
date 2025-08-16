@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto, UserDto } from 'src/users/dto';
+import { CreateUserDto, UserResponse } from 'src/users/dto';
 import { ApiCreatedSuccessResponse } from 'src/common/decorators';
 import {
   ApiSuccessResponse,
@@ -10,7 +10,6 @@ import {
 import { RefreshTokenDto, TokenDto } from './dto';
 import {
   ApiBody,
-  ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
@@ -25,7 +24,7 @@ export class AuthController {
 
   @ApiOperation({ description: 'Creates an Administrator Account' })
   @ApiBody({ description: 'Administrator details', type: CreateUserDto })
-  @ApiCreatedSuccessResponse('Account Successfully Created', UserDto)
+  @ApiCreatedSuccessResponse('Account Successfully Created', UserResponse)
   @ApiUnprocessableEntityResponse({
     description: 'Validation Error',
     type: ApiErrorResponse,
@@ -46,7 +45,7 @@ export class AuthController {
 
   @ApiOperation({ description: 'Creates a Customer Account' })
   @ApiBody({ description: 'Customers details', type: CreateUserDto })
-  @ApiCreatedSuccessResponse('Account Successfully Created', UserDto)
+  @ApiCreatedSuccessResponse('Account Successfully Created', UserResponse)
   @ApiUnprocessableEntityResponse({
     description: 'Validation Error',
     type: ApiErrorResponse,
