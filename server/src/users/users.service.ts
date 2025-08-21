@@ -16,31 +16,31 @@ export class UsersService {
     private readonly hashProvider: HashProvider,
   ) {}
 
-  async addNewCustomer(customer: CreateUserDto) {
+  async addNewUser(user: CreateUserDto) {
     try {
-      customer.password = await this.hashProvider.hash(customer.password);
-      const newCustomer = await this.usersRepository.createCustomer(customer);
-      return newCustomer;
+      user.password = await this.hashProvider.hash(user.password);
+      const newUser = await this.usersRepository.createUser(user);
+      return newUser;
     } catch (e) {
       console.log(e);
       throw e;
     }
   }
 
-  async addNewAdmin(admin: CreateUserDto) {
+  async getUser(user: TokenDto) {
     try {
-      admin.password = await this.hashProvider.hash(admin.password);
-      const newAdmin = await this.usersRepository.createAdmin(admin);
-      return newAdmin;
+      const foundUser = await this.usersRepository.findUser(user.email);
+      if (!foundUser) throw new NotFoundException('User not found');
+      return foundUser;
     } catch (e) {
       console.log(e);
       throw e;
     }
   }
 
-  async getCustomer(customer: TokenDto) {
+  async getUserById(id: string) {
     try {
-      const user = await this.usersRepository.findCustomer(customer.email);
+      const user = await this.usersRepository.findUserById(id);
       if (!user) throw new NotFoundException('User not found');
       return user;
     } catch (e) {
@@ -49,42 +49,9 @@ export class UsersService {
     }
   }
 
-  async getAdmin(admin: TokenDto) {
+  async getAllUsers() {
     try {
-      const user = await this.usersRepository.findAdmin(admin.email);
-      if (!user) throw new NotFoundException('User not found');
-      return user;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async getCustomerById(id: string) {
-    try {
-      const user = await this.usersRepository.findCustomerById(id);
-      if (!user) throw new NotFoundException('User not found');
-      return user;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async getAdminById(id: string) {
-    try {
-      const user = await this.usersRepository.findAdminById(id);
-      if (!user) throw new NotFoundException('User not found');
-      return user;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async getAllAdmins() {
-    try {
-      const users = await this.usersRepository.findAllAdmins();
+      const users = await this.usersRepository.findAllUsers();
       if (users?.length < 1) throw new NotFoundException('Users not found');
       return users;
     } catch (e) {
@@ -93,29 +60,9 @@ export class UsersService {
     }
   }
 
-  async getAllCustomers() {
+  async removeUser(id: string) {
     try {
-      const users = await this.usersRepository.findAllCustomers();
-      if (users?.length < 1) throw new NotFoundException('Users not found');
-      return users;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async removeAdmin(id: string) {
-    try {
-      return await this.usersRepository.deleteAdmin(id);
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async removeCustomer(id: string) {
-    try {
-      return await this.usersRepository.deleteCustomer(id);
+      return await this.usersRepository.deleteUser(id);
     } catch (e) {
       console.log(e);
       throw e;
@@ -125,8 +72,7 @@ export class UsersService {
   async changePassword(payload: UpdatePasswordDto) {
     try {
       const { oldPassword, newPassword, email } = payload;
-      let user = await this.usersRepository.findAdmin(email);
-      if (!user) user = await this.usersRepository.findCustomer(email);
+      const user = await this.usersRepository.findUser(email);
       if (!user) throw new NotFoundException('Account not found');
       if (oldPassword === newPassword)
         throw new BadRequestException('Please use a new password');
@@ -138,7 +84,7 @@ export class UsersService {
 
       if (!validPwd) throw new UnauthorizedException('Wrong password provided');
       const newHash = await this.hashProvider.hash(newPassword);
-      await this.usersRepository.updatePassword(email, newHash, user?.role);
+      await this.usersRepository.updatePassword(email, newHash);
     } catch (e) {
       console.log(e);
       throw e;
