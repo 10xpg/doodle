@@ -4,10 +4,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
-import { CreateUserDto, UpdatePasswordDto } from './dto';
-import { HashProvider } from 'src/auth/providers/hash.provider';
 import { TokenDto } from 'src/auth/dto';
+import { HashProvider } from 'src/auth/providers/hash.provider';
+import { CreateUserDto, UpdatePasswordDto } from './dto';
+import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {

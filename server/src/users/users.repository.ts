@@ -6,17 +6,16 @@ import { CreateUserDto } from './dto';
 export class UsersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createCustomer(customer: CreateUserDto) {
+  async createUser(user: CreateUserDto) {
     try {
-      const { email, password, lastname, firstname, gender, phone } = customer;
-      const customerExists = await this.prisma.customer.findUnique({
+      const { email, password, lastname, firstname, gender, phone } = user;
+      const userExsists = await this.prisma.user.findUnique({
         where: {
           email,
         },
       });
-      if (customerExists)
-        throw new ConflictException('Customer already exists');
-      const newCustomer = await this.prisma.customer.create({
+      if (userExsists) throw new ConflictException('User already exists');
+      const newUser = await this.prisma.user.create({
         data: {
           email,
           password,
@@ -29,44 +28,16 @@ export class UsersRepository {
           password: true,
         },
       });
-      return newCustomer;
+      return newUser;
     } catch (e) {
       console.log(e);
       throw e;
     }
   }
 
-  async createAdmin(admin: CreateUserDto) {
+  async findUser(email: string) {
     try {
-      const { email, password, lastname, firstname, gender, phone } = admin;
-      const adminExists = await this.prisma.admin.findUnique({
-        where: { email },
-      });
-      if (adminExists)
-        throw new ConflictException('Administrator already exists');
-      const newAdmin = await this.prisma.admin.create({
-        data: {
-          email,
-          password,
-          lastname,
-          firstname,
-          gender,
-          phone,
-        },
-        omit: {
-          password: true,
-        },
-      });
-      return newAdmin;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async findCustomer(email: string) {
-    try {
-      const user = await this.prisma.customer.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { email },
       });
       return user;
@@ -76,21 +47,9 @@ export class UsersRepository {
     }
   }
 
-  async findAdmin(email: string) {
+  async findUserById(id: string) {
     try {
-      const user = await this.prisma.admin.findUnique({
-        where: { email },
-      });
-      return user;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async findCustomerById(id: string) {
-    try {
-      const user = await this.prisma.customer.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id },
         omit: {
           password: true,
@@ -106,27 +65,9 @@ export class UsersRepository {
     }
   }
 
-  async findAdminById(id: string) {
+  async findAllUsers() {
     try {
-      const user = await this.prisma.admin.findUnique({
-        where: { id },
-        omit: {
-          password: true,
-          createdAt: true,
-          updatedAt: true,
-          gender: true,
-        },
-      });
-      return user;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async findAllAdmins() {
-    try {
-      const users = await this.prisma.admin.findMany({
+      const users = await this.prisma.user.findMany({
         omit: {
           password: true,
           createdAt: true,
@@ -142,49 +83,11 @@ export class UsersRepository {
     }
   }
 
-  async findAllCustomers() {
+  async updatePassword(email: string, hash: string) {
     try {
-      const users = await this.prisma.customer.findMany({
-        omit: {
-          password: true,
-          createdAt: true,
-          updatedAt: true,
-          role: true,
-          gender: true,
-        },
-      });
-      return users;
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async updatePassword(email: string, hash: string, role: string) {
-    try {
-      if (role === 'ADMIN') {
-        await this.prisma.admin.update({
-          where: { email },
-          data: { password: hash },
-        });
-      }
-
-      if (role === 'CUSTOMER') {
-        await this.prisma.customer.update({
-          where: { email },
-          data: { password: hash },
-        });
-      }
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
-  }
-
-  async deleteAdmin(id: string) {
-    try {
-      return await this.prisma.admin.delete({
-        where: { id },
+      await this.prisma.user.update({
+        where: { email },
+        data: { password: hash },
       });
     } catch (e) {
       console.log(e);
@@ -192,9 +95,9 @@ export class UsersRepository {
     }
   }
 
-  async deleteCustomer(id: string) {
+  async deleteUser(id: string) {
     try {
-      return await this.prisma.customer.delete({
+      return await this.prisma.user.delete({
         where: { id },
       });
     } catch (e) {
