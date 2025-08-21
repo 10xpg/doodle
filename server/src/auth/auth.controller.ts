@@ -22,8 +22,8 @@ import {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ description: 'Creates an Administrator Account' })
-  @ApiBody({ description: 'Administrator details', type: CreateUserDto })
+  @ApiOperation({ description: 'Creates an Account' })
+  @ApiBody({ description: 'User details', type: CreateUserDto })
   @ApiCreatedSuccessResponse('Account Successfully Created', UserResponse)
   @ApiUnprocessableEntityResponse({
     description: 'Validation Error',
@@ -33,41 +33,20 @@ export class AuthController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
-  @Post('register/admins')
-  async createAdmin(@Body() user: CreateUserDto) {
-    const admin = await this.authService.registerAdmin(user);
-    return new ApiSuccessResponse(
-      'Administrator creation successful',
-      HttpStatus.CREATED,
-      admin,
-    );
-  }
-
-  @ApiOperation({ description: 'Creates a Customer Account' })
-  @ApiBody({ description: 'Customers details', type: CreateUserDto })
-  @ApiCreatedSuccessResponse('Account Successfully Created', UserResponse)
-  @ApiUnprocessableEntityResponse({
-    description: 'Validation Error',
-    type: ApiErrorResponse,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal Server Error',
-    type: ApiErrorResponse,
-  })
-  @Post('register/customers')
-  async createCustomer(@Body() user: CreateUserDto) {
-    const customer = await this.authService.registerCustomer(user);
+  @Post('register')
+  async createUser(@Body() user: CreateUserDto) {
+    const acc = await this.authService.registerUser(user);
     return new ApiSuccessResponse(
       'Customer creation successful',
       HttpStatus.CREATED,
-      customer,
+      acc,
     );
   }
 
   @ApiOperation({ description: 'Creates a Bearer Token for Authentiction ' })
   @ApiBody({ description: 'Login credentials', type: TokenDto })
   @ApiOkResponse({
-    description: 'Administrator Authentication Successful',
+    description: 'Authentication Successful',
     type: ApiTokenResponse,
   })
   @ApiUnprocessableEntityResponse({
@@ -79,36 +58,9 @@ export class AuthController {
     type: ApiErrorResponse,
   })
   @HttpCode(HttpStatus.OK)
-  @Post('token/admins')
-  async authenticateAdmin(@Body() credentials: TokenDto) {
-    const tokens = await this.authService.loginAdmin(credentials);
-    const { accessToken, refreshToken } = tokens;
-    return new ApiTokenResponse(
-      'Authentication successful',
-      HttpStatus.OK,
-      accessToken,
-      refreshToken,
-    );
-  }
-
-  @ApiOperation({ description: 'Creates a Bearer Token for Authentiction ' })
-  @ApiBody({ description: 'Login credentials', type: TokenDto })
-  @ApiOkResponse({
-    description: 'Customer Authentication Successful',
-    type: ApiTokenResponse,
-  })
-  @ApiUnprocessableEntityResponse({
-    description: 'Validation Error',
-    type: ApiErrorResponse,
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Internal Server Error',
-    type: ApiErrorResponse,
-  })
-  @HttpCode(HttpStatus.OK)
-  @Post('token/customers')
-  async authenticateCustomer(@Body() credentials: TokenDto) {
-    const tokens = await this.authService.loginCustomer(credentials);
+  @Post('token')
+  async authenticate(@Body() credentials: TokenDto) {
+    const tokens = await this.authService.loginUser(credentials);
     const { accessToken, refreshToken } = tokens;
     return new ApiTokenResponse(
       'Authentication successful',
