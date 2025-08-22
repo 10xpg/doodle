@@ -1,11 +1,20 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Ip,
+  Post,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDto, UserResponse } from 'src/users/dto';
+import { CreateUserDto, GetEmailDto, UserResponse } from 'src/users/dto';
 import { ApiCreatedSuccessResponse } from 'src/common/decorators';
 import {
   ApiSuccessResponse,
   ApiTokenResponse,
   ApiErrorResponse,
+  ApiSuccessBaseResponse,
 } from 'src/common/response';
 import { RefreshTokenDto, TokenDto } from './dto';
 import {
@@ -94,6 +103,35 @@ export class AuthController {
       HttpStatus.OK,
       accessToken,
       refreshToken,
+    );
+  }
+
+  @ApiOperation({ description: 'Initiate Password Reset' })
+  @ApiBody({ description: 'Reset Account identifier', type: GetEmailDto })
+  @ApiOkResponse({
+    description: 'Token generated',
+    type: ApiSuccessBaseResponse,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation Error',
+    type: ApiErrorResponse,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error',
+    type: ApiErrorResponse,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('password-reset/request')
+  async initReset(
+    @Body() identifier: GetEmailDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
+  ) {
+    const { email } = identifier;
+    await this.authService.generateResetToken(email, ip, userAgent);
+    return new ApiSuccessBaseResponse(
+      'If account exists, you will receive email instructions',
+      HttpStatus.OK,
     );
   }
 }

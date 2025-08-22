@@ -7,15 +7,22 @@ import { BcryptProvider } from './providers/bcrypt.provider';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { authConfig } from './config';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { AuthRepository } from './auth.repository';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     ConfigModule.forFeature(authConfig),
     JwtModule.registerAsync(authConfig.asProvider()),
+    PrismaModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, { provide: HashProvider, useClass: BcryptProvider }],
+  providers: [
+    AuthService,
+    AuthRepository,
+    { provide: HashProvider, useClass: BcryptProvider },
+  ],
   exports: [HashProvider],
 })
 export class AuthModule {}

@@ -14,6 +14,8 @@ import { JwtService } from '@nestjs/jwt';
 import type { ConfigType } from '@nestjs/config';
 import { authConfig } from './config';
 import { RefreshJwtContract } from 'src/common/types';
+import * as crypto from 'node:crypto';
+import { AuthRepository } from './auth.repository';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +26,7 @@ export class AuthService {
     private usersService: UsersService,
     @Inject(authConfig.KEY)
     private authConf: ConfigType<typeof authConfig>,
+    private authRepository: AuthRepository,
   ) {}
 
   async registerUser(user: CreateUserDto) {
@@ -32,7 +35,7 @@ export class AuthService {
 
   async loginUser(credentials: TokenDto) {
     try {
-      const user = await this.usersService.getUser(credentials);
+      const user = await this.usersService.getUser(credentials.email);
       if (!user) throw new NotFoundException('User not found');
       const { password } = credentials;
       const { password: hash } = user;
@@ -96,6 +99,27 @@ export class AuthService {
         refreshTokenOpts,
       );
       return { accessToken, refreshToken };
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async generateResetToken(email: string, ip: string, userAgent: string) {
+    try {
+      const user = await this.usersService.getUser(email);
+      if (!user) return;
+      const rawbytes = crypto.randomBytes(32);
+      const token = rawbytes.toString('base64url');
+      const hashedToken = await this.hashProvider.hash(token);
+      await this.authRepository.add({
+        userId: user?.id,
+        hashedToken,
+        purpose: 'Password Reset',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        requestIP: ip,
+        requestUserAgent: userAgent,
+      });
     } catch (e) {
       console.log(e);
       throw e;

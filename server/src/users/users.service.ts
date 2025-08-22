@@ -4,7 +4,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TokenDto } from 'src/auth/dto';
 import { HashProvider } from 'src/auth/providers/hash.provider';
 import { CreateUserDto, UpdatePasswordDto } from './dto';
 import { UsersRepository } from './users.repository';
@@ -27,9 +26,9 @@ export class UsersService {
     }
   }
 
-  async getUser(user: TokenDto) {
+  async getUser(user: string) {
     try {
-      const foundUser = await this.usersRepository.findUser(user.email);
+      const foundUser = await this.usersRepository.findUser(user);
       if (!foundUser) throw new NotFoundException('User not found');
       return foundUser;
     } catch (e) {
