@@ -16,17 +16,20 @@ import { authConfig } from './config';
 import { RefreshJwtContract } from 'src/common/types';
 import * as crypto from 'node:crypto';
 import { AuthRepository } from './auth.repository';
+import { BullmqService } from 'src/bullmq/bullmq.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private hashProvider: HashProvider,
-    private jwtService: JwtService,
-    @Inject(forwardRef(() => UsersService))
-    private usersService: UsersService,
     @Inject(authConfig.KEY)
     private authConf: ConfigType<typeof authConfig>,
+
+    @Inject(forwardRef(() => UsersService))
+    private usersService: UsersService,
+    private hashProvider: HashProvider,
+    private jwtService: JwtService,
     private authRepository: AuthRepository,
+    private queueService: BullmqService,
   ) {}
 
   async registerUser(user: CreateUserDto) {
@@ -105,7 +108,7 @@ export class AuthService {
     }
   }
 
-  async generateResetToken(email: string, ip: string, userAgent: string) {
+  async generateResetToken(email: string, ip: string, userAgent?: string) {
     try {
       const user = await this.usersService.getUser(email);
       if (!user) return;
@@ -120,9 +123,9 @@ export class AuthService {
         requestIP: ip,
         requestUserAgent: userAgent,
       });
+      await this.queueService.dumpEmail(email, token);
     } catch (e) {
       console.log(e);
-      throw e;
     }
   }
 }

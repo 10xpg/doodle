@@ -1,11 +1,11 @@
 import {
   Body,
   Controller,
-  Headers,
   HttpCode,
   HttpStatus,
   Ip,
   Post,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, GetEmailDto, UserResponse } from 'src/users/dto';
@@ -25,6 +25,7 @@ import {
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import type { Request } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -125,9 +126,10 @@ export class AuthController {
   async initReset(
     @Body() identifier: GetEmailDto,
     @Ip() ip: string,
-    @Headers('user-agent') userAgent: string,
+    @Req() req: Request,
   ) {
     const { email } = identifier;
+    const userAgent = req.headers['user-agent'];
     await this.authService.generateResetToken(email, ip, userAgent);
     return new ApiSuccessBaseResponse(
       'If account exists, you will receive email instructions',

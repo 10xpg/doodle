@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { authConfig } from './config';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthRepository } from './auth.repository';
+import { BullmqModule } from 'src/bullmq/bullmq.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthRepository } from './auth.repository';
     ConfigModule.forFeature(authConfig),
     JwtModule.registerAsync(authConfig.asProvider()),
     PrismaModule,
+    BullmqModule,
   ],
   controllers: [AuthController],
   providers: [
