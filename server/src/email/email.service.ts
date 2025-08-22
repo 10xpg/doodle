@@ -5,14 +5,14 @@ import { Injectable } from '@nestjs/common';
 export class EmailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  sendPasswordResetMail(to, from: string, subject: string) {
+  sendPasswordResetMail(to, from: string, subject: string, resetUrl) {
     this.mailerService
       .sendMail({
         to,
         from,
         subject,
-        template: 'index',
-        context: { code: 'cf1a3f828287', username: 'john doe' },
+        template: 'reset-password',
+        context: { resetLink: resetUrl },
       })
       .then((success) => {
         console.log(success);

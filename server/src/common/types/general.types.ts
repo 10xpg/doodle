@@ -14,3 +14,8 @@ export interface RefreshJwtContract {
   iat?: number;
   exp?: number;
 }
+
+export interface ResetPasswordJob {
+  email: string;
+  resetUrl: string;
+}
