@@ -6,9 +6,9 @@ export class ApiErrorResponse {
   @ApiProperty({ example: 'Operation Failed' })
   message: string;
   @ApiProperty({ example: 'An unexpected error occured' })
-  error: string;
+  error?: string;
 
-  constructor(statusCode: number, message: string, error: string) {
+  constructor(statusCode: number, message: string, error?: string) {
     this.statusCode = statusCode;
     this.message = message;
     this.error = error;

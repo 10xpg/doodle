@@ -4,7 +4,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 export default registerAs('email.conf', () => ({
   transport: process.env.EMAIL_TRANSPORT,
   defaults: { from: '"Doodle" <antoinegbezeh17@gmail.com>' },
-  preview: true,
+  // preview: true,
   template: {
     dir: process.cwd() + '/templates/',
     adapter: new HandlebarsAdapter(),

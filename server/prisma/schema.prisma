@@ -25,24 +25,25 @@ enum Gender {
 }
 
 model User {
-  id            String      @id @default(uuid())
-  email         String      @unique
+  id            String                 @id @default(uuid())
+  email         String                 @unique
   password      String
   lastname      String
   firstname     String
   gender        Gender
   phone         String?
-  role          Role        @default(CUSTOMER)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  role          Role                   @default(CUSTOMER)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
   PasswordReset TokenUtil[]
+  ResetSession  PasswordResetSession[]
 }
 
 model TokenUtil {
   id        String    @id @default(uuid())
   user      User      @relation(fields: [userId], references: [id])
   userId    String
-  tokenHash String
+  tokenHash String    @unique
   purpose   String
   createdAt DateTime  @default(now())
   expiresAt DateTime
@@ -50,4 +51,14 @@ model TokenUtil {
   attempts  Int       @default(0)
   requestIP String?
   requestUA String?
+}
+
+model PasswordResetSession {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String
+  resetSessionId String   @unique
+  used           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
 }

@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   forwardRef,
+  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -14,9 +15,14 @@ import { JwtService } from '@nestjs/jwt';
 import type { ConfigType } from '@nestjs/config';
 import { authConfig } from './config';
 import { RefreshJwtContract } from 'src/common/types';
-import * as crypto from 'node:crypto';
 import { AuthRepository } from './auth.repository';
 import { BullmqService } from 'src/bullmq/bullmq.service';
+import { ApiErrorResponse } from 'src/common/response';
+import {
+  provideExpiry,
+  provideToken,
+} from 'src/utils/generators/token.generator';
+import { hashToken } from 'src/utils';
 
 @Injectable()
 export class AuthService {
@@ -112,18 +118,53 @@ export class AuthService {
     try {
       const user = await this.usersService.getUser(email);
       if (!user) return;
-      const rawbytes = crypto.randomBytes(32);
-      const token = rawbytes.toString('base64url');
-      const hashedToken = await this.hashProvider.hash(token);
-      await this.authRepository.add({
+      const token = provideToken();
+      console.log(token.length);
+      console.log('tk: ', token);
+      const expiresAt = provideExpiry();
+      const hashedToken = hashToken(token);
+      console.log('hash tk: ', hashedToken);
+      await this.authRepository.addToken({
         userId: user?.id,
         hashedToken,
         purpose: 'Password Reset',
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        expiresAt,
         requestIP: ip,
         requestUserAgent: userAgent,
       });
       await this.queueService.dumpEmail(email, token);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  // BUG: Token recieved changes
+  async verifyResetToken(token: string) {
+    try {
+      const reqHash = hashToken(token.trim());
+      console.log(token.trim().length);
+      console.log('hashInVerify: ', reqHash);
+      const dbHash = await this.authRepository.retrieveToken(reqHash);
+      console.log(dbHash);
+      await this.authRepository.flagTokenAsUsed(reqHash);
+      const tokenExp = new Date(Date.now()) > <Date>dbHash?.expiresAt;
+      const expiresAt = provideExpiry();
+      if (dbHash && !tokenExp) {
+        const sessionId = provideToken();
+        await this.authRepository.addResetSession({
+          userId: dbHash.userId,
+          expiresAt,
+          resetSessionId: sessionId,
+        });
+        return { sessionId, expiresAt };
+      } else {
+        throw new ForbiddenException(
+          new ApiErrorResponse(
+            HttpStatus.FORBIDDEN,
+            'Invalid or expired token.',
+          ),
+        );
+      }
     } catch (e) {
       console.log(e);
     }

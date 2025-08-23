@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   IsDate,
   IsEmail,
@@ -26,21 +26,41 @@ export class GenericTokenDto {
   @IsNotEmpty()
   userId: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   hashedToken: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   purpose: string;
 
+  @ApiProperty()
   @IsNotEmpty()
   @IsDate()
   expiresAt: Date;
 
+  @ApiProperty()
   @IsOptional()
   requestIP?: string;
 
+  @ApiProperty()
   @IsOptional()
   requestUserAgent?: string;
 }
+
+export class PasswordResetSessionDto extends PickType(GenericTokenDto, [
+  'userId',
+  'expiresAt',
+] as const) {
+  @ApiProperty({ example: 'Xn9wTgIqk9Hc7aVhZJxOaVY6xJmVgq35jZyW2iR5e1c' })
+  @IsNotEmpty()
+  @IsString()
+  resetSessionId: string;
+}
+
+export class PasswordResetVerifyResponse extends PickType(
+  PasswordResetSessionDto,
+  ['resetSessionId', 'expiresAt'] as const,
+) {}

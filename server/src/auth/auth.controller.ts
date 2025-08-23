@@ -1,27 +1,39 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Ip,
+  Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, GetEmailDto, UserResponse } from 'src/users/dto';
-import { ApiCreatedSuccessResponse } from 'src/common/decorators';
+import {
+  ApiCreatedSuccessResponse,
+  ApiOkSuccessResponse,
+} from 'src/common/decorators';
 import {
   ApiSuccessResponse,
   ApiTokenResponse,
   ApiErrorResponse,
   ApiSuccessBaseResponse,
 } from 'src/common/response';
-import { RefreshTokenDto, TokenDto } from './dto';
+import {
+  GetResetTokenDto,
+  PasswordResetVerifyResponse,
+  RefreshTokenDto,
+  TokenDto,
+} from './dto';
 import {
   ApiBody,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
@@ -134,6 +146,27 @@ export class AuthController {
     return new ApiSuccessBaseResponse(
       'If account exists, you will receive email instructions',
       HttpStatus.OK,
+    );
+  }
+
+  @ApiOperation({ description: 'Verifies Password Reset Token' })
+  @ApiOkSuccessResponse('Token verified', PasswordResetVerifyResponse, false)
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation Error',
+    type: ApiErrorResponse,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error',
+    type: ApiErrorResponse,
+  })
+  @Get('password-reset/verify')
+  async verifyReset(@Query() qstrings: GetResetTokenDto) {
+    const { tk } = qstrings;
+    const results = await this.authService.verifyResetToken(tk);
+    return new ApiSuccessResponse(
+      'Reset token verification successful',
+      HttpStatus.OK,
+      results,
     );
   }
 }

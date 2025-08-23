@@ -16,7 +16,7 @@ export class BullmqService {
   async dumpEmail(email: string, token: string) {
     await this.emailQueue.add('reset-password', {
       email,
-      resetUrl: `${this.appConf.baseUrl}/auth/password-reset?tk=${token}`,
+      resetUrl: `${this.appConf.baseUrl}/auth/password-reset/verify?tk=${token}`,
     });
   }
 }
