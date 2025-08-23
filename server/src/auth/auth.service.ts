@@ -138,19 +138,17 @@ export class AuthService {
   async verifyResetToken(token: string) {
     try {
       const reqHash = hashToken(token);
-      const dbHash = await this.authRepository.retrieveToken(reqHash);
-      await this.authRepository.flagTokenAsUsed(reqHash);
-      const tokenExp = new Date(Date.now()) > <Date>dbHash?.expiresAt;
-      const expiresAt = provideExpiry();
-      if (dbHash && !tokenExp) {
-        const sessionId = provideToken();
-        await this.authRepository.addResetSession({
-          userId: dbHash.userId,
-          expiresAt,
-          resetSessionId: sessionId,
-        });
-        return { sessionId, expiresAt };
-      } else {
+      const dbToken = await this.authRepository.retrieveToken(reqHash);
+      const tokenExp = new Date(Date.now()) > <Date>dbToken?.expiresAt;
+      if (!dbToken)
+        throw new ForbiddenException(
+          new ApiErrorResponse(
+            HttpStatus.FORBIDDEN,
+            'Invalid or expired token.',
+          ),
+        );
+      if (tokenExp) {
+        await this.authRepository.flagFailedAttempt(reqHash);
         throw new ForbiddenException(
           new ApiErrorResponse(
             HttpStatus.FORBIDDEN,
@@ -158,6 +156,27 @@ export class AuthService {
           ),
         );
       }
+      if (dbToken.usedAt) {
+        await this.authRepository.flagFailedAttempt(reqHash);
+        throw new ForbiddenException(
+          new ApiErrorResponse(
+            HttpStatus.FORBIDDEN,
+            'Invalid or expired token.',
+          ),
+        );
+      }
+      if (dbToken.attempts >= 3)
+        throw new ForbiddenException(
+          new ApiErrorResponse(HttpStatus.FORBIDDEN, 'Too many attempts'),
+        );
+      const sessionId = provideToken();
+      const expiresAt = provideExpiry();
+      await this.authRepository.addResetSession({
+        userId: dbToken.userId,
+        expiresAt,
+        resetSessionId: sessionId,
+      });
+      return { sessionId, expiresAt };
     } catch (e) {
       console.log(e);
       throw e;

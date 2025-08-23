@@ -43,22 +43,18 @@ export class AuthRepository {
     }
   }
 
-  async flagTokenAsUsed(hash: string) {
-    try {
-      const tk = await this.retrieveToken(hash);
-      if (<number>tk?.attempts <= 3) {
-        await this.prisma.tokenUtil.update({
-          where: { tokenHash: hash },
-          data: {
-            usedAt: new Date(Date.now()),
-            attempts: <number>tk?.attempts + 1,
-          },
-        });
-      }
-    } catch (e) {
-      console.log(e);
-      throw e;
-    }
+  async flagFailedAttempt(hash: string) {
+    await this.prisma.tokenUtil.update({
+      where: { tokenHash: hash },
+      data: { attempts: { increment: 1 } },
+    });
+  }
+
+  async flagAsUsed(hash: string) {
+    await this.prisma.tokenUtil.update({
+      where: { tokenHash: hash },
+      data: { usedAt: new Date(Date.now()) },
+    });
   }
 
   async addResetSession(obj: PasswordResetSessionDto) {
