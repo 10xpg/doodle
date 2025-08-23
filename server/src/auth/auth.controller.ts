@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Ip,
+  Param,
   Post,
   Query,
   Req,
@@ -22,7 +23,9 @@ import {
   ApiSuccessBaseResponse,
 } from 'src/common/response';
 import {
+  GetResetSessionDto,
   GetResetTokenDto,
+  PasswordResetDto,
   PasswordResetVerifyResponse,
   RefreshTokenDto,
   TokenDto,
@@ -166,6 +169,32 @@ export class AuthController {
       'Reset token verification successful',
       HttpStatus.OK,
       results,
+    );
+  }
+
+  @ApiOperation({ description: 'Reset Password' })
+  @ApiOkResponse({
+    description: 'Password reset successful',
+    type: ApiSuccessBaseResponse,
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Validation Error',
+    type: ApiErrorResponse,
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal Server Error',
+    type: ApiErrorResponse,
+  })
+  @Post('password-reset/confirm')
+  async resetPassword(
+    @Param() params: GetResetSessionDto,
+    @Body() body: PasswordResetDto,
+  ) {
+    const { newPassword } = body;
+    const { resetSessionId } = params;
+    return new ApiSuccessBaseResponse(
+      'Password reset successful',
+      HttpStatus.CREATED,
     );
   }
 }

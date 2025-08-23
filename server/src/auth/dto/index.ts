@@ -1,3 +1,2 @@
-export * from './token.dto';
-export * from './refresh-token.dto';
+export * from './post.dto';
 export * from './read.dto';
