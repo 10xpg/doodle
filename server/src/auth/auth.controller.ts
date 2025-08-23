@@ -185,13 +185,14 @@ export class AuthController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
-  @Post('password-reset/confirm')
+  @Post('password-reset/confirm/:sid')
   async resetPassword(
     @Param() params: GetResetSessionDto,
     @Body() body: PasswordResetDto,
   ) {
     const { newPassword } = body;
-    const { resetSessionId } = params;
+    const { sid } = params;
+    await this.authService.confirmReset(sid, newPassword);
     return new ApiSuccessBaseResponse(
       'Password reset successful',
       HttpStatus.CREATED,

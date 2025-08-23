@@ -50,14 +50,14 @@ export class AuthRepository {
     });
   }
 
-  async flagAsUsed(hash: string) {
+  async flagTokenAsUsed(hash: string) {
     await this.prisma.tokenUtil.update({
       where: { tokenHash: hash },
       data: { usedAt: new Date(Date.now()) },
     });
   }
 
-  async addResetSession(obj: PasswordResetSessionDto) {
+  async addResetSid(obj: PasswordResetSessionDto) {
     const { userId, expiresAt, resetSessionId } = obj;
     try {
       return await this.prisma.passwordResetSession.create({
@@ -73,11 +73,34 @@ export class AuthRepository {
     }
   }
 
-  async flagSessionIdAsUsed(sessionId: string) {
+  async retrieveSid(sid: string) {
+    try {
+      return await this.prisma.passwordResetSession.findUnique({
+        where: { resetSessionId: sid },
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async flagSidAsUsed(sessionId: string) {
     try {
       return await this.prisma.passwordResetSession.update({
         where: { resetSessionId: sessionId },
         data: { used: true },
+      });
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async updatePassword(userId: string, hash: string) {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { password: hash },
       });
     } catch (e) {
       console.log(e);

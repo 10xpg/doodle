@@ -1,6 +1,5 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { PasswordBaseDto } from './post.dto';
 
 export class GetResetTokenDto {
   @ApiProperty({ example: 'uTmSY02zliMnfGnAfBXnqMcmZaN0EJp_rTmysCDqlpg%3E' })
@@ -9,6 +8,9 @@ export class GetResetTokenDto {
   tk: string;
 }
 
-export class GetResetSessionDto extends PickType(PasswordBaseDto, [
-  'resetSessionId',
-] as const) {}
+export class GetResetSessionDto {
+  @ApiProperty({ example: 'Xn9wTgIqk9Hc7aVhZJxOaVY6xJmVgq35jZyW2iR5e1c' })
+  @IsNotEmpty()
+  @IsString()
+  sid: string;
+}

@@ -139,31 +139,15 @@ export class AuthService {
     try {
       const reqHash = hashToken(token);
       const dbToken = await this.authRepository.retrieveToken(reqHash);
-      const tokenExp = new Date(Date.now()) > <Date>dbToken?.expiresAt;
-      if (!dbToken)
-        throw new ForbiddenException(
-          new ApiErrorResponse(
-            HttpStatus.FORBIDDEN,
-            'Invalid or expired token.',
-          ),
-        );
-      if (tokenExp) {
+      const tokenExpired = new Date(Date.now()) > <Date>dbToken?.expiresAt;
+      if (!dbToken) throw new ForbiddenException('Invalid or expired token.');
+      if (tokenExpired) {
         await this.authRepository.flagFailedAttempt(reqHash);
-        throw new ForbiddenException(
-          new ApiErrorResponse(
-            HttpStatus.FORBIDDEN,
-            'Invalid or expired token.',
-          ),
-        );
+        throw new ForbiddenException('Invalid or expired token.');
       }
       if (dbToken.usedAt) {
         await this.authRepository.flagFailedAttempt(reqHash);
-        throw new ForbiddenException(
-          new ApiErrorResponse(
-            HttpStatus.FORBIDDEN,
-            'Invalid or expired token.',
-          ),
-        );
+        throw new ForbiddenException('Invalid or expired token.');
       }
       if (dbToken.attempts >= 3)
         throw new ForbiddenException(
@@ -171,12 +155,33 @@ export class AuthService {
         );
       const sessionId = provideToken();
       const expiresAt = provideExpiry();
-      await this.authRepository.addResetSession({
+      await this.authRepository.addResetSid({
         userId: dbToken.userId,
         expiresAt,
         resetSessionId: sessionId,
       });
+      await this.authRepository.flagTokenAsUsed(reqHash);
       return { sessionId, expiresAt };
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async confirmReset(sid: string, password: string) {
+    try {
+      const session = await this.authRepository.retrieveSid(sid);
+      const sidExpired = new Date(Date.now()) > <Date>session?.expiresAt;
+      if (!session)
+        throw new ForbiddenException('Invalid or expired reset sid');
+      if (sidExpired || session?.used)
+        throw new ForbiddenException('Invalid or expired reset sid');
+      const newHashedPassword = await this.hashProvider.hash(password);
+      await this.authRepository.updatePassword(
+        session?.userId,
+        newHashedPassword,
+      );
+      await this.authRepository.flagSidAsUsed(sid);
     } catch (e) {
       console.log(e);
       throw e;
