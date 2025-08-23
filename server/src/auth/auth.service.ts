@@ -119,11 +119,8 @@ export class AuthService {
       const user = await this.usersService.getUser(email);
       if (!user) return;
       const token = provideToken();
-      console.log(token.length);
-      console.log('tk: ', token);
       const expiresAt = provideExpiry();
       const hashedToken = hashToken(token);
-      console.log('hash tk: ', hashedToken);
       await this.authRepository.addToken({
         userId: user?.id,
         hashedToken,
@@ -138,14 +135,10 @@ export class AuthService {
     }
   }
 
-  // BUG: Token recieved changes
   async verifyResetToken(token: string) {
     try {
-      const reqHash = hashToken(token.trim());
-      console.log(token.trim().length);
-      console.log('hashInVerify: ', reqHash);
+      const reqHash = hashToken(token);
       const dbHash = await this.authRepository.retrieveToken(reqHash);
-      console.log(dbHash);
       await this.authRepository.flagTokenAsUsed(reqHash);
       const tokenExp = new Date(Date.now()) > <Date>dbHash?.expiresAt;
       const expiresAt = provideExpiry();
@@ -167,6 +160,7 @@ export class AuthService {
       }
     } catch (e) {
       console.log(e);
+      throw e;
     }
   }
 }

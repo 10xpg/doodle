@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Ip,
-  Param,
   Post,
   Query,
   Req,
@@ -33,7 +32,6 @@ import {
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
@@ -163,6 +161,7 @@ export class AuthController {
   async verifyReset(@Query() qstrings: GetResetTokenDto) {
     const { tk } = qstrings;
     const results = await this.authService.verifyResetToken(tk);
+    console.log(results);
     return new ApiSuccessResponse(
       'Reset token verification successful',
       HttpStatus.OK,
