@@ -53,7 +53,7 @@ export class AuthRepository {
   async flagTokenAsUsed(hash: string) {
     await this.prisma.tokenUtil.update({
       where: { tokenHash: hash },
-      data: { usedAt: new Date(Date.now()) },
+      data: { attempts: { increment: 1 }, usedAt: new Date(Date.now()) },
     });
   }
 
