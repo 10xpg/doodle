@@ -6,13 +6,18 @@ import {
   HttpStatus,
   Param,
   Put,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  ApiPaginatedResponse,
   ApiSuccessBaseResponse,
   ApiSuccessResponse,
 } from 'src/common/response';
-import { ApiOkSuccessResponse } from '../common/decorators';
+import {
+  ApiOkPaginatedResponse,
+  ApiOkSuccessResponse,
+} from '../common/decorators';
 import {
   GetUserBaseDto,
   DeleteUserDto,
@@ -27,15 +32,19 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
+import { PaginationDto } from 'src/common/dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @ApiOperation({ description: 'List User Accounts' })
-  @ApiOkSuccessResponse('Fetched User Accounts', UserResponse, true)
+  @ApiQuery({ name: 'limit', required: false, type: 'number', default: 10 })
+  @ApiQuery({ name: 'page', required: false, type: 'number', default: 1 })
+  @ApiOkPaginatedResponse('Fetched User Accounts', UserResponse)
   @ApiNotFoundResponse({
     description: 'Accounts Not Found',
     type: ApiErrorResponse,
@@ -45,9 +54,15 @@ export class UsersController {
     type: ApiErrorResponse,
   })
   @Get('')
-  async getUsers() {
-    const users = await this.usersService.getAllUsers();
-    return new ApiSuccessResponse('Retrieved users', HttpStatus.OK, users);
+  async getUsers(@Query() pagination: PaginationDto) {
+    const users = await this.usersService.getAllUsers(pagination);
+    return new ApiPaginatedResponse(
+      'Retrieved users',
+      HttpStatus.OK,
+      users.data,
+      users.meta,
+      users.links,
+    );
   }
 
   @ApiOperation({

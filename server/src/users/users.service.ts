@@ -7,12 +7,15 @@ import {
 import { HashProvider } from 'src/auth/providers/hash.provider';
 import { CreateUserDto, UpdatePasswordDto } from './dto';
 import { UsersRepository } from './users.repository';
+import { PaginationDto } from 'src/common/dto';
+import { PaginationProvider } from 'src/common/pagination/pagination.provider';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly hashProvider: HashProvider,
+    private readonly paginationProvider: PaginationProvider,
   ) {}
 
   async addNewUser(user: CreateUserDto) {
@@ -48,11 +51,16 @@ export class UsersService {
     }
   }
 
-  async getAllUsers() {
+  async getAllUsers(dto: PaginationDto) {
     try {
-      const users = await this.usersRepository.findAllUsers();
-      if (users?.length < 1) throw new NotFoundException('Users not found');
-      return users;
+      const queryOpts = {
+        skip: (dto.page! - 1) * dto.limit!,
+        take: dto.limit,
+      };
+      const usersList = await this.usersRepository.findAllUsers(queryOpts);
+      const usersCount = await this.usersRepository.countUsers();
+      if (usersList?.length < 1) throw new NotFoundException('Users not found');
+      return this.paginationProvider.paginate(dto, usersList, usersCount);
     } catch (e) {
       console.log(e);
       throw e;

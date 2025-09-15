@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { appConfig } from './config';
 import { BullmqModule } from './bullmq/bullmq.module';
 import { EmailModule } from './email/email.module';
+import { PaginationModule } from './common/pagination/pagination.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { EmailModule } from './email/email.module';
     UsersModule,
     BullmqModule,
     EmailModule,
+    PaginationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

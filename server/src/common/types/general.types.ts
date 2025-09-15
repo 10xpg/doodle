@@ -1,5 +1,7 @@
 export type Password = string | Buffer;
 
+export type QueryOpts = { skip?: number; take?: number; where?: object };
+
 export interface AccessJwtContract {
   sub: string;
   email: string;
@@ -18,4 +20,25 @@ export interface RefreshJwtContract {
 export interface ResetPasswordJob {
   email: string;
   resetUrl: string;
+}
+
+export class PaginationMetadata {
+  itemsPerPage: number;
+  totalItems: number;
+  currentPage: number;
+  totalPages: number;
+}
+
+export class PaginationLinks {
+  firstPage: string;
+  lastPage: string;
+  currentPage: string;
+  nextPage: string;
+  previousPage: string;
+}
+
+export interface PaginationContract<T> {
+  data: T[];
+  meta: PaginationMetadata;
+  links: PaginationLinks;
 }

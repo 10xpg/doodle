@@ -5,7 +5,7 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { ApiSuccessResponse } from '../response';
+import { ApiPaginatedResponse, ApiSuccessResponse } from '../response';
 
 export const ApiOkSuccessResponse = <T extends Type<any>>(
   description: string,
@@ -43,6 +43,24 @@ export const ApiOkSuccessResponse = <T extends Type<any>>(
                 },
               ],
             }),
+      },
+    }),
+  );
+};
+
+export const ApiOkPaginatedResponse = <T extends Type<any>>(
+  description: string,
+  model: T,
+) => {
+  return applyDecorators(
+    ApiExtraModels(ApiPaginatedResponse, model),
+    ApiOkResponse({
+      description,
+      schema: {
+        allOf: [
+          { $ref: getSchemaPath(ApiPaginatedResponse) },
+          { properties: { data: { $ref: getSchemaPath(model) } } },
+        ],
       },
     }),
   );

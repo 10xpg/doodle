@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto';
+import { type QueryOpts } from 'src/common/types';
 
 @Injectable()
 export class UsersRepository {
@@ -65,7 +66,7 @@ export class UsersRepository {
     }
   }
 
-  async findAllUsers() {
+  async findAllUsers(opts: QueryOpts) {
     try {
       const users = await this.prisma.user.findMany({
         omit: {
@@ -75,8 +76,19 @@ export class UsersRepository {
           role: true,
           gender: true,
         },
+        skip: opts?.skip,
+        take: opts?.take,
       });
       return users;
+    } catch (e) {
+      console.log(e);
+      throw e;
+    }
+  }
+
+  async countUsers() {
+    try {
+      return this.prisma.user.count();
     } catch (e) {
       console.log(e);
       throw e;

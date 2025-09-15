@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PaginationMetadata, PaginationLinks } from '../types';
 
 export class ApiSuccessBaseResponse {
   @ApiProperty({ example: 'Operation successful' })
@@ -18,6 +19,35 @@ export class ApiSuccessResponse<T> extends ApiSuccessBaseResponse {
   constructor(message: string, statusCode: number, data?: T) {
     super(message, statusCode);
     this.data = data;
+  }
+}
+
+export class ApiPaginatedResponse<T> extends ApiSuccessResponse<T> {
+  @ApiProperty({
+    example: { itemsPerPage: 10, totalItems: 1, currentPage: 1, totalPages: 1 },
+  })
+  meta?: PaginationMetadata;
+  @ApiProperty({
+    example: {
+      firstPage: 'http://localhost:3000/users?limit=10&page=1',
+      lastPage: 'http://localhost:3000/users?limit=10&page=1',
+      currentPage: 'http://localhost:3000/users?limit=10&page=1',
+      nextPage: 'http://localhost:3000/users?limit=10&page=1',
+      previousPage: 'http://localhost:3000/users?limit=10&page=1',
+    },
+  })
+  links?: PaginationLinks;
+
+  constructor(
+    message: string,
+    statusCode: number,
+    data?: T,
+    meta?: PaginationMetadata,
+    links?: PaginationLinks,
+  ) {
+    super(message, statusCode, data);
+    this.links = links;
+    this.meta = meta;
   }
 }
 
