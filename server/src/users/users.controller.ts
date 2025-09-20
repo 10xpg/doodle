@@ -7,6 +7,8 @@ import {
   Param,
   Put,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -36,6 +38,8 @@ import {
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { RolesGuard } from 'src/auth/guards/role.guard';
 
 @Controller('users')
 export class UsersController {
@@ -53,6 +57,8 @@ export class UsersController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   @Get('')
   async getUsers(@Query() pagination: PaginationDto) {
     const users = await this.usersService.getAllUsers(pagination);

@@ -20,6 +20,7 @@ async function bootstrap() {
     .setDescription('Ecommerce Backend API')
     .setVersion('1.0')
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory());
 

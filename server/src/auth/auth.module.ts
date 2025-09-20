@@ -10,6 +10,8 @@ import { authConfig } from './config';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthRepository } from './auth.repository';
 import { BullmqModule } from 'src/bullmq/bullmq.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthorizationGuard } from './guards/authorize.guard';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { BullmqModule } from 'src/bullmq/bullmq.module';
   providers: [
     AuthService,
     AuthRepository,
+    { provide: APP_GUARD, useClass: AuthorizationGuard },
     { provide: HashProvider, useClass: BcryptProvider },
   ],
   exports: [HashProvider],

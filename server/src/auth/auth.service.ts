@@ -30,7 +30,7 @@ export class AuthService {
     @Inject(authConfig.KEY)
     private authConf: ConfigType<typeof authConfig>,
 
-    @Inject(forwardRef(() => UsersService))
+    @Inject()
     private usersService: UsersService,
     private hashProvider: HashProvider,
     private jwtService: JwtService,

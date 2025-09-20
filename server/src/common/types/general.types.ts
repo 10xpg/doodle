@@ -36,9 +36,3 @@ export class PaginationLinks {
   nextPage: string;
   previousPage: string;
 }
-
-export interface PaginationContract<T> {
-  data: T[];
-  meta: PaginationMetadata;
-  links: PaginationLinks;
-}
