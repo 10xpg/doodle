@@ -7,7 +7,6 @@ import {
   Param,
   Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -39,7 +38,7 @@ import {
 } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { RolesGuard } from 'src/auth/guards/role.guard';
+import { BrokenAccessControlGuard } from 'src/auth/guards/role.guard';
 
 @Controller('users')
 export class UsersController {
@@ -57,7 +56,7 @@ export class UsersController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
-  @UseGuards(RolesGuard)
+  @UseGuards(BrokenAccessControlGuard)
   @Roles('ADMIN')
   @Get('')
   async getUsers(@Query() pagination: PaginationDto) {
@@ -84,6 +83,8 @@ export class UsersController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
+  @UseGuards(BrokenAccessControlGuard)
+  @Roles('ADMIN', 'CUSTOMER')
   @Get(':id')
   async getUserById(@Param() param: GetUserBaseDto) {
     const { id } = param;
@@ -106,6 +107,8 @@ export class UsersController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
+  @UseGuards(BrokenAccessControlGuard)
+  @Roles('ADMIN', 'CUSTOMER')
   @Put(':id/password')
   async changePassword(
     @Body()
@@ -131,13 +134,12 @@ export class UsersController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
+  @UseGuards(BrokenAccessControlGuard)
+  @Roles('ADMIN', 'CUSTOMER')
   @Delete(':id')
   async deleteUser(@Param() param: DeleteUserDto) {
     const { id } = param;
     await this.usersService.removeUser(id);
-    return new ApiSuccessBaseResponse(
-      'Deleted administrator account',
-      HttpStatus.OK,
-    );
+    return new ApiSuccessBaseResponse('Operation successful', HttpStatus.OK);
   }
 }

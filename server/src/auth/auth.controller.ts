@@ -42,6 +42,7 @@ import type { Request } from 'express';
 import { AllowAnonymousAccess } from './decorators/unknown.decorator';
 
 @ApiTags('Authentication')
+@AllowAnonymousAccess()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -57,7 +58,6 @@ export class AuthController {
     description: 'Internal Server Error',
     type: ApiErrorResponse,
   })
-  @AllowAnonymousAccess()
   @Post('register')
   async createUser(@Body() user: CreateUserDto) {
     const acc = await this.authService.registerUser(user);
@@ -83,7 +83,6 @@ export class AuthController {
     type: ApiErrorResponse,
   })
   @HttpCode(HttpStatus.OK)
-  @AllowAnonymousAccess()
   @Post('token')
   async authenticate(@Body() credentials: TokenDto) {
     const tokens = await this.authService.loginUser(credentials);
